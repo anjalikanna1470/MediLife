@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "785766532672",
+    "project_id": "medilife-ff273",
+    "storage_bucket": "medilife-ff273.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785766532672:android:6745204fd3f466dc0301a5",
+        "android_client_info": {
+          "package_name": "com.example.medilife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEwUIOlpXwesqVzOXgVImssBmMCTyvKjk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

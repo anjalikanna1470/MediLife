@@ -1,0 +1,38 @@
+# =========================
+# Android Studio / IntelliJ
+# =========================
+*.iml
+.idea/
+.gradle/
+local.properties
+
+# Android build
+/build
+*/build/
+.cxx/
+.externalNativeBuild/
+captures/
+
+# =========================
+# Python Backend
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+.venv/
+venv/
+env/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
