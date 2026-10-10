@@ -3,17 +3,13 @@ package com.example.medilife
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.google.firebase.FirebaseApp
+import androidx.activity.enableEdgeToEdge
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        try {
-            FirebaseApp.initializeApp(this)
-        } catch (e: Exception) {
-            // Firebase initialized or running in fallback mode
-        }
+        enableEdgeToEdge()
 
         setContent {
             MediLifeApp()

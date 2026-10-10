@@ -63,6 +63,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
+    val doctorProfile by viewModel.doctorProfile.collectAsState()
     val currentMode by viewModel.currentMode.collectAsState()
     val appearanceMode by viewModel.appearanceMode.collectAsState()
     val authorizedContacts by viewModel.emergencyAuthorizedContacts.collectAsState()
@@ -89,7 +90,7 @@ fun SettingsScreen(
 
         SettingsGroup(title = if (currentMode == UserMode.DOCTOR) "Professional Account" else "Account") {
             if (currentMode == UserMode.DOCTOR) {
-                SettingsRow(Icons.Outlined.Work, "Professional Profile", "${viewModel.doctorProfile.value.specialty} • ${viewModel.doctorProfile.value.hospital}")
+                SettingsRow(Icons.Outlined.Work, "Professional Profile", "${doctorProfile.specialty} • ${doctorProfile.hospital}")
                 SettingsRow(Icons.Outlined.AccountCircle, "Clinic Information", "Manage your professional details")
                 SettingsRow(Icons.Outlined.Notifications, "Availability", "Appointment and availability preferences")
             } else {

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -184,7 +185,7 @@ fun MediLifeBottomNavigation(
                         ) {
 
                             popUpTo(
-                                navController.graph.startDestinationId
+                                navController.graph.findStartDestination().id
                             ) {
                                 saveState = true
                             }
