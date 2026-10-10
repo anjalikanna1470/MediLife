@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "785766532672",
+    "firebase_url": "https://medilife-ff273-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "medilife-ff273",
     "storage_bucket": "medilife-ff273.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.medilife"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "785766532672-6gn9r980dqtoqf05n5icds731gqdvlhm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.medilife",
+            "certificate_hash": "fb849f14db4f4486d80ba04ac4128ef94d1d4b75"
+          }
+        },
+        {
+          "client_id": "785766532672-6soqkkbtjg1qv2oamocion6tlmql9l81.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBEwUIOlpXwesqVzOXgVImssBmMCTyvKjk"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785766532672-6soqkkbtjg1qv2oamocion6tlmql9l81.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
