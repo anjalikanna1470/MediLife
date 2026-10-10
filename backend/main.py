@@ -2,6 +2,8 @@ import os
 import json
 import base64
 import mimetypes
+import re
+from pathlib import Path
 from typing import List, Optional, Any
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
@@ -12,7 +14,26 @@ from groq import Groq
 
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+def read_groq_key_from_android_local_properties() -> Optional[str]:
+    """Development fallback: read GROQ_API_KEY from project-root local.properties.
+
+    The key is read by the Python backend only; it is never injected into the APK.
+    Environment variables / backend .env take precedence.
+    """
+    properties_file = Path(__file__).resolve().parent.parent / "local.properties"
+    if not properties_file.is_file():
+        return None
+    try:
+        for line in properties_file.read_text(encoding="utf-8").splitlines():
+            match = re.match(r"^\s*GROQ_API_KEY\s*=\s*(.*?)\s*$", line)
+            if match:
+                value = match.group(1).strip().strip('"').strip("'")
+                return value or None
+    except OSError:
+        return None
+    return None
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or read_groq_key_from_android_local_properties()
 AI_MODEL = os.getenv("AI_MODEL", "openai/gpt-oss-120b")
 # Use a Groq vision-capable model for images and scanned PDF pages.
 VISION_MODEL = os.getenv("VISION_MODEL", "qwen/qwen3.6-27b")
@@ -116,7 +137,7 @@ def require_groq():
     if not GROQ_API_KEY or groq_client is None:
         raise HTTPException(
             status_code=500,
-            detail="GROQ_API_KEY is not configured. Add it to the backend .env file.",
+            detail="GROQ_API_KEY is not configured. Set it in the project-root local.properties or backend .env file.",
         )
 
 def build_patient_context(context: Optional[PatientContext]) -> str:

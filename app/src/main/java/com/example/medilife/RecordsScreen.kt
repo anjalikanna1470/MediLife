@@ -1,5 +1,11 @@
 package com.example.medilife
 
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -84,6 +90,53 @@ private fun RecordCard(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit
 ) {
+    val context = LocalContext.current
+    val pdfLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val document = PdfDocument()
+                val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+                val page = document.startPage(pageInfo)
+                val paint = Paint().apply {
+                    color = android.graphics.Color.BLACK
+                    textSize = 16f
+                    isAntiAlias = true
+                }
+                val lines = listOf(
+                    "MediLife - Medical Record",
+                    "",
+                    "Title: ${record.title}",
+                    "Type: ${record.type}",
+                    "Date: ${record.date}",
+                    "Doctor: ${record.doctorName}",
+                    "",
+                    "Summary:",
+                    record.summary
+                )
+                var y = 60f
+                lines.forEach { line ->
+                    // Wrap long lines to fit a printable page.
+                    line.chunked(68).forEach { part ->
+                        if (y < 800f) {
+                            page.canvas.drawText(part, 40f, y, paint)
+                            y += 24f
+                        }
+                    }
+                }
+                document.finishPage(page)
+                context.contentResolver.openOutputStream(uri)?.use { output ->
+                    document.writeTo(output)
+                } ?: throw IllegalStateException("Cannot create PDF output.")
+                document.close()
+                Toast.makeText(context, "PDF saved successfully", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "PDF export failed: ${e.localizedMessage ?: "unknown error"}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     Surface(
         onClick = onToggleExpand,
         shape = RoundedCornerShape(16.dp),
@@ -164,7 +217,10 @@ private fun RecordCard(
                         }
 
                         OutlinedButton(
-                            onClick = {},
+                            onClick = {
+                                val safeName = record.title.replace(Regex("[^A-Za-z0-9_-]"), "_").take(40)
+                                pdfLauncher.launch("${safeName.ifBlank { "MediLife_Record" }}.pdf")
+                            },
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = androidx.compose.ui.graphics.Color.White),

@@ -26,9 +26,16 @@ data class DocumentAnalysisResult(
 )
 
 object DocumentAnalysisClient {
-    // Android emulator -> backend running on the Windows host.
-    // For a physical phone, replace this with your computer's LAN IP.
-    private const val BASE_URL = "http://10.0.2.2:8000"
+    // Emulator default. On a physical phone, configure the Windows computer's LAN
+    // address in Settings > Backend connection (for example http://192.168.1.5:8000).
+    private const val DEFAULT_BASE_URL = "http://10.0.2.2:8000"
+    private fun baseUrl(context: Context): String = context
+        .getSharedPreferences("medilife_network", Context.MODE_PRIVATE)
+        .getString("backend_base_url", DEFAULT_BASE_URL)
+        .orEmpty()
+        .trim()
+        .trimEnd('/')
+        .ifBlank { DEFAULT_BASE_URL }
     private val client = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
@@ -73,7 +80,7 @@ object DocumentAnalysisClient {
                 .build()
 
             val request = Request.Builder()
-                .url("$BASE_URL/documents/analyze")
+                .url("${baseUrl(context)}/documents/analyze")
                 .post(body)
                 .build()
 

@@ -1,38 +1,38 @@
-# =========================
 # Android Studio / IntelliJ
-# =========================
+
 *.iml
 .idea/
-.gradle/
-local.properties
 
-# Android build
-/build
-*/build/
+# Gradle and Android build artifacts
+
+.gradle/
+.kotlin/
+build/
+**/build/
 .cxx/
 .externalNativeBuild/
 captures/
 
-# =========================
-# Python Backend
-# =========================
-__pycache__/
+# Local machine configuration
+
+local.properties
+
+# Python cache and virtual environments
+
+**pycache**/
 *.py[cod]
 *.pyo
-
 .venv/
 venv/
 env/
 
-# =========================
-# Environment / Secrets
-# =========================
+# Environment variables and secrets
+
 .env
 .env.*
 !.env.example
 
-# =========================
-# OS
-# =========================
+# OS-generated files
+
 .DS_Store
 Thumbs.db

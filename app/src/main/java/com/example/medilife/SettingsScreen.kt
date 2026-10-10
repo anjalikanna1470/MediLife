@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -71,6 +72,14 @@ fun SettingsScreen(
     var showAddContactDialog by remember { mutableStateOf(false) }
     var newContactName by remember { mutableStateOf("") }
     var newContactRelationship by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val networkPreferences = remember(context) {
+        context.getSharedPreferences("medilife_network", android.content.Context.MODE_PRIVATE)
+    }
+    var backendUrl by remember {
+        mutableStateOf(networkPreferences.getString("backend_base_url", "http://10.0.2.2:8000") ?: "http://10.0.2.2:8000")
+    }
+    var backendSaved by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -143,6 +152,43 @@ fun SettingsScreen(
             SettingsGroup(title = "Professional Privacy & Access") {
                 SettingsRow(Icons.Outlined.PrivacyTip, "Privacy & Security", "Professional account controls")
                 SettingsRow(Icons.Outlined.Security, "Access Management", "Review patient access and consent", onClick = { onNavigateTo("consent") })
+            }
+        }
+
+        SettingsGroup(title = "Backend Connection") {
+            Text(
+                "AI document analysis needs your computer's backend server to be reachable on the same Wi-Fi network.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedTextField(
+                value = backendUrl,
+                onValueChange = { backendUrl = it; backendSaved = false },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Backend base URL") },
+                placeholder = { Text("http://192.168.1.5:8000") },
+                singleLine = true
+            )
+            Text(
+                "Physical phone: use your PC's IPv4 address, not 10.0.2.2. Android Emulator: use http://10.0.2.2:8000. Keep the backend running and allow port 8000 through Windows Firewall.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Button(
+                onClick = {
+                    val cleaned = backendUrl.trim().trimEnd('/')
+                    if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
+                        networkPreferences.edit().putString("backend_base_url", cleaned).apply()
+                        backendUrl = cleaned
+                        backendSaved = true
+                    } else {
+                        backendSaved = false
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Save backend address") }
+            if (backendSaved) {
+                Text("Backend address saved. Try the attachment again.", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
             }
         }
 

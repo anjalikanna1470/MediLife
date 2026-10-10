@@ -1,6 +1,7 @@
 package com.example.medilife
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -9,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class AppViewModel : ViewModel() {
+class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = FirebaseRepository()
 
@@ -261,8 +264,11 @@ class AppViewModel : ViewModel() {
             _healthMetrics.value =
                 repository.getSampleHealthMetrics()
 
-            _medicines.value =
-                repository.getSampleMedicines()
+            val savedMedicineStatuses = getApplication<Application>()
+                .getSharedPreferences("medilife_medicine_status", Application.MODE_PRIVATE)
+            _medicines.value = repository.getSampleMedicines().map { medicine ->
+                medicine.copy(status = savedMedicineStatuses.getString(medicine.id, medicine.status) ?: medicine.status)
+            }
 
             _records.value =
                 repository.getSampleRecords()
@@ -548,13 +554,17 @@ class AppViewModel : ViewModel() {
 
         _medicines.value =
             _medicines.value.map { medicine ->
-
                 if (medicine.id == medicineId) {
                     medicine.copy(status = status)
                 } else {
                     medicine
                 }
             }
+        getApplication<Application>()
+            .getSharedPreferences("medilife_medicine_status", Application.MODE_PRIVATE)
+            .edit()
+            .putString(medicineId, status)
+            .apply()
     }
 
     fun selectMedicine(medicine: Medicine?) {
@@ -665,8 +675,34 @@ class AppViewModel : ViewModel() {
             val responseText =
                 when {
 
-                    selectedAttachments.isNotEmpty() ->
-                        "Your selected attachment(s) ${selectedAttachments.joinToString { it.name }} are included with this message. File-content analysis is not connected in this build yet."
+                    selectedAttachments.isNotEmpty() -> {
+                        try {
+                            val analysis = withContext(Dispatchers.IO) {
+                                DocumentAnalysisClient.analyze(
+                                    context = getApplication(),
+                                    attachment = selectedAttachments.first(),
+                                    userId = repository.currentUid ?: "demo-user",
+                                    language = "English",
+                                    question = query.ifBlank { "Summarize this medical document and identify key findings." }
+                                )
+                            }
+                            buildString {
+                                appendLine("Document: ${analysis.filename}")
+                                if (analysis.documentType.isNotBlank()) appendLine("Type: ${analysis.documentType}")
+                                if (analysis.date.isNotBlank()) appendLine("Date: ${analysis.date}")
+                                appendLine()
+                                appendLine(analysis.summary.ifBlank { "The document was processed, but no summary was returned." })
+                                if (analysis.diagnoses.isNotBlank()) appendLine("\\nFindings:\\n${analysis.diagnoses}")
+                                if (analysis.medications.isNotBlank()) appendLine("\\nMedications:\\n${analysis.medications}")
+                                if (analysis.labValues.isNotBlank()) appendLine("\\nLab values:\\n${analysis.labValues}")
+                                if (analysis.followUp.isNotBlank()) appendLine("\\nFollow-up:\\n${analysis.followUp}")
+                                if (analysis.uncertainFields.isNotBlank()) appendLine("\\nPlease verify:\\n${analysis.uncertainFields}")
+                                appendLine("\\nThis is an AI-generated summary, not a diagnosis or prescription.")
+                            }
+                        } catch (e: Exception) {
+                            "I couldn't analyze the attachment. ${e.message ?: "Check that the backend is running and the phone can reach it."}"
+                        }
+                    }
 
                     query.contains(
                         "medicine",
@@ -773,9 +809,31 @@ class AppViewModel : ViewModel() {
 
             val responseText =
                 if (selectedAttachments.isNotEmpty()) {
-
-                    "Selected attachment(s) ${selectedAttachments.joinToString { it.name }} are included with this message. Document/image analysis is not connected in this build yet."
-
+                    try {
+                        val analysis = withContext(Dispatchers.IO) {
+                            DocumentAnalysisClient.analyze(
+                                context = getApplication(),
+                                attachment = selectedAttachments.first(),
+                                userId = repository.currentUid ?: "demo-doctor",
+                                language = "English",
+                                question = text.ifBlank { "Summarize this medical document for clinical review." }
+                            )
+                        }
+                        buildString {
+                            appendLine("Document: ${analysis.filename}")
+                            if (analysis.documentType.isNotBlank()) appendLine("Type: ${analysis.documentType}")
+                            if (analysis.date.isNotBlank()) appendLine("Date: ${analysis.date}")
+                            appendLine()
+                            appendLine(analysis.summary)
+                            if (analysis.diagnoses.isNotBlank()) appendLine("\\nFindings:\\n${analysis.diagnoses}")
+                            if (analysis.medications.isNotBlank()) appendLine("\\nMedications:\\n${analysis.medications}")
+                            if (analysis.labValues.isNotBlank()) appendLine("\\nLab values:\\n${analysis.labValues}")
+                            if (analysis.followUp.isNotBlank()) appendLine("\\nFollow-up:\\n${analysis.followUp}")
+                            appendLine("\\nAI-generated support only; verify against the original document.")
+                        }
+                    } catch (e: Exception) {
+                        "I couldn't analyze the attachment. ${e.message ?: "Check backend connectivity and try again."}"
+                    }
                 } else {
 
                     "Longitudinal Patient Summary for Anjali Sharma (DOB: 1995-04-12):\n" +

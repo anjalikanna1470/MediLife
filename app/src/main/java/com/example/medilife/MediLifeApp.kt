@@ -4,6 +4,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -55,7 +60,23 @@ fun MediLifeApp(
                             currentMode = currentMode
                         )
                     }
-                }
+                },
+                floatingActionButton = {
+                    // Keep Settings reachable from every patient/doctor primary page.
+                    if (showBottomBar && currentRoute != "settings" && currentRoute != NavItem.AICopilot.route) {
+                        FloatingActionButton(
+                            onClick = {
+                                navController.navigate("settings") { launchSingleTop = true }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = "Open Settings"
+                            )
+                        }
+                    }
+                },
+                floatingActionButtonPosition = androidx.compose.material3.FabPosition.End
             ) { innerPadding ->
                 MediLifeNavGraph(
                     navController = navController,

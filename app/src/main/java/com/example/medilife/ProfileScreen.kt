@@ -39,6 +39,17 @@ fun ProfileScreen(
         contentPadding = PaddingValues(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            OutlinedButton(
+                onClick = { onNavigateTo("settings") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Outlined.Settings, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Settings")
+            }
+        }
+
         // PROFILE HEADER
         item {
             Surface(

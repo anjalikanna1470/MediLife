@@ -1,0 +1,3 @@
+# Copy the GROQ_API_KEY line into your local, unshared local.properties file.
+# Do not paste a real key into this example or commit local.properties.
+GROQ_API_KEY=YOUR_NEW_GROQ_API_KEY
